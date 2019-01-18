@@ -3,7 +3,165 @@ use std::io::{BufRead, BufReader};
 
 fn main() {
   // day1();
-  day2b();
+  // day2();
+  // day2b();
+  // day3();
+  day3b();
+}
+
+fn day3() {
+  const search: i32 = 361527;
+
+  const x_orig: i32 = 0;
+  const y_orig: i32 = 0;
+  const dirs: [char; 4] = ['E', 'N', 'W', 'S'];
+
+  let mut x = 0;
+  let mut y = 0;
+  let mut val = 1;
+  let mut dir_idx = 0;
+  let mut dir_steps = 1;
+  let mut dir_count = 0;
+  let mut remaining_dir_steps = 1;
+
+  while val != search {
+    match dirs[dir_idx] {
+      'E' => {
+        x = x + 1;
+      }
+      'N' => {
+        y = y - 1;
+      }
+      'W' => {
+        x = x - 1;
+      }
+      'S' => {
+        y = y + 1;
+      }
+      _ => {}
+    }
+    val += 1;
+    remaining_dir_steps -= 1;
+    if remaining_dir_steps == 0 {
+      // next dir
+      dir_idx = (dir_idx + 1) % dirs.len();
+
+      // inc the number of times we have gone this many steps
+      dir_count += 1;
+
+      if dir_count == 2 {
+        // increase the number of steps/dir that we go
+        dir_count = 0;
+        dir_steps += 1;
+      }
+      remaining_dir_steps = dir_steps;
+    }
+  }
+
+  let dist = manhattan_distance((x, y), (x_orig, y_orig));
+  println!("Distance to {}: {}", search, dist);
+}
+
+fn day3b() {
+  const search: i32 = 361527;
+
+  const x_orig: i32 = 0;
+  const y_orig: i32 = 0;
+  const dirs: [char; 4] = ['E', 'N', 'W', 'S'];
+
+  // Not sure the best way to make a growable 2d vec and also deal with
+  // bounds checking for the neighbors_sum function, so use the answer from part 1
+  // to create a statically-sized grid that is more than large enough
+  let mut grid = vec![vec![0; 328]; 328];
+  let mut x = 0;
+  let mut y = 0;
+  let mut val = 1;
+  let mut dir_idx = 0;
+  let mut dir_steps = 1;
+  let mut dir_count = 0;
+  let mut remaining_dir_steps = 1;
+
+  fn to_grid_coords(x: i32, y: i32) -> (i32, i32) {
+    let grid_size = 328;
+    let grid_origin_x = grid_size / 2;
+    let grid_origin_y = grid_size / 2;
+    (x + grid_origin_x, y + grid_origin_y)
+  };
+
+  fn neighbor_sum(grid: &Vec<Vec<i32>>, x: i32, y: i32) -> i32 {
+    let (x, y) = to_grid_coords(x, y);
+    let mut sum = 0;
+    for (dx, dy) in [
+      (-1, -1),
+      (-1, 0),
+      (-1, 1),
+      (0, -1),
+      (0, 1),
+      (1, -1),
+      (1, 0),
+      (1, 1),
+    ]
+    .iter()
+    {
+      sum += grid[(y + dy) as usize][(x + dx) as usize];
+    }
+    sum
+  }
+
+  fn put_grid((x, y): (i32, i32), v: i32, grid: &mut Vec<Vec<i32>>) {
+    let (x, y) = to_grid_coords(x, y);
+    grid[y as usize][x as usize] = v;
+  };
+
+  // Put the initial "1" value in the 0,0 spot
+  put_grid((0, 0), 1, &mut grid);
+
+  while val != search {
+    match dirs[dir_idx] {
+      'E' => {
+        x = x + 1;
+      }
+      'N' => {
+        y = y - 1;
+      }
+      'W' => {
+        x = x - 1;
+      }
+      'S' => {
+        y = y + 1;
+      }
+      _ => {}
+    }
+    val += 1;
+    let grid_val = neighbor_sum(&grid, x, y);
+    put_grid((x, y), grid_val, &mut grid);
+    if grid_val > search {
+      println!("First val larger than {}: {}", search, grid_val);
+      panic!("All done!");
+    }
+    remaining_dir_steps -= 1;
+    if remaining_dir_steps == 0 {
+      // next dir
+      dir_idx = (dir_idx + 1) % dirs.len();
+
+      // inc the number of times we have gone this many steps
+      dir_count += 1;
+
+      if dir_count == 2 {
+        // increase the number of steps/dir that we go
+        dir_count = 0;
+        dir_steps += 1;
+      }
+      remaining_dir_steps = dir_steps;
+    }
+  }
+
+  let dist = manhattan_distance((x, y), (x_orig, y_orig));
+  println!("Distance to {}: {}", search, dist);
+}
+
+fn manhattan_distance((x, y): (i32, i32), (x2, y2): (i32, i32)) -> i32 {
+  (x - x2).abs() + (y - y2).abs()
 }
 
 fn max(ints: &Vec<i32>) -> i32 {
