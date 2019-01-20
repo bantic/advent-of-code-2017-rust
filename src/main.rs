@@ -6,7 +6,63 @@ fn main() {
   // day2();
   // day2b();
   // day3();
-  day3b();
+  // day3b();
+  day4();
+}
+
+fn day4() {
+  let input = get_data(4);
+  let mut valid1 = 0;
+  let mut valid2 = 0;
+  for line in input.iter() {
+    if passphrase_is_valid_part1(line) {
+      valid1 += 1;
+    }
+    if passphrase_is_valid_part2(line) {
+      valid2 += 1;
+    }
+  }
+  println!(
+    "Number valid for part 1: {}. For part 2: {}",
+    valid1, valid2
+  );
+}
+
+fn passphrase_is_valid_part1(s: &str) -> bool {
+  let mut words: Vec<&str> = vec![];
+  for word in s.split(" ") {
+    if words.contains(&word) {
+      return false;
+    }
+    words.push(word);
+  }
+  true
+}
+
+fn passphrase_is_valid_part2(s: &str) -> bool {
+  let mut sorted_words: Vec<String> = vec![];
+  for word in s.split(" ") {
+    let mut chars: Vec<char> = word.chars().collect();
+    chars.sort();
+    let sorted_word: String = chars.into_iter().collect();
+    // println!("word {:?}, sorted_word {:?}", word, sorted_word);
+    if sorted_words.contains(&sorted_word) {
+      return false;
+    }
+    sorted_words.push(sorted_word);
+  }
+  true
+}
+
+fn get_data(day: i32) -> Vec<String> {
+  let path = format!("data/input{}.txt", day);
+  let mut input: Vec<String> = vec![];
+  let file = File::open(path).unwrap();
+  for line in BufReader::new(file).lines() {
+    input.push(String::from(line.unwrap()));
+  }
+
+  return input;
 }
 
 fn day3() {
